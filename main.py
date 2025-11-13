@@ -37,7 +37,7 @@ df= df.drop_duplicates()
 x = df.drop('is_good',axis=1)
 y= df['is_good']
 
-
+# check for unbalanced data
 plt.figure(figsize=(8, 6))
 sns.countplot(x='is_good', data=df,palette='Set2')
 plt.title('Distribution of Target Variable (is_good)')
@@ -51,7 +51,7 @@ print(y.value_counts())
 print("\nVariable Percentages:")
 print(y.value_counts(normalize=True) * 100)
 
-
+# heatmap
 fig, axis = plt.subplots(figsize=(10, 10))
 correlation_x = x.corr()
 sns.heatmap(correlation_x, annot=True, linewidths=.5, fmt='.2f', ax=axis, cmap="crest")
@@ -74,21 +74,19 @@ for idx, col in enumerate(numerical_cols):
 plt.tight_layout()
 plt.show()
 
-
+# pairplot
 key_features = ['power_level', 'public_approval_rating', 'age',
                 'civilian_casualties_past_year', 'is_good']
 sns.pairplot(df[key_features], hue='is_good', diag_kind='hist')
 plt.suptitle('Pairplot of Key Features', y=1.02)
 plt.show()
 
-
 std_scaler = StandardScaler()
 normalized_x = std_scaler.fit_transform(x)
 
 print(normalized_x[:1])
 
-
-# Split the data: 80% training and 20% testing
+# Split the data
 x_train, x_test, y_train, y_test = train_test_split(normalized_x, y, test_size=0.2, random_state=42)
 
 # Print the shapes of the resulting sets to confirm
@@ -98,26 +96,30 @@ print("Training lable shape:", y_train.shape)
 print("Testing lable shape:", y_test.shape)
 
 
-def cal_performance_metrics(cm, y_test, y_pred, y_prob):
-    TN, FP, FN, TP=cm.ravel()   #.ravel() flattens the array into 1D array
+"""
+### manual calculation of performance metrics
+"""
 
-    # Calculate metrics
-    TPR = TP / (TP + FN) if (TP + FN) != 0 else 0  # True Positive Rate (Recall)
-    TNR = TN / (TN + FP) if (TN + FP) != 0 else 0  # True Negative Rate
-    FPR = FP / (FP + TN) if (FP + TN) != 0 else 0  # False Positive Rate
-    FNR = FN / (FN + TP) if (FN + TP) != 0 else 0  # False Negative Rate
-    TSS = TPR - FPR # True Skill Statistic
-    Precision = TP / (TP + FP) if (TP + FP) != 0 else 0  # Precision
+
+def cal_performance_metrics(cm, y_test, y_pred, y_prob):
+    TN, FP, FN, TP=cm.ravel()  
+
+    # different metrics to calculate
+    TPR = TP / (TP + FN) if (TP + FN) != 0 else 0 
+    TNR = TN / (TN + FP) if (TN + FP) != 0 else 0 
+    FPR = FP / (FP + TN) if (FP + TN) != 0 else 0 
+    FNR = FN / (FN + TP) if (FN + TP) != 0 else 0 
+    TSS = TPR - FPR 
+    Precision = TP / (TP + FP) if (TP + FP) != 0 else 0 
     f1_score = 2 * TP / (2 * TP + FP + FN) if (TP + FP + FN) != 0 else 0
-    Accuracy = (TP + TN) / (TP + TN + FP + FN)  # Accuracy
-    Error_rate = 1 - Accuracy  # Error Rate
+    Accuracy = (TP + TN) / (TP + TN + FP + FN)  
+    Error_rate = 1 - Accuracy  
     BACC = (TPR + TNR) / 2
     HSS = 2 * (TP * TN - FP * FN) / ((TP + FN) * (FN + TN) + (TP + FP) * (FP + TN)) if ((TP + FN) * (FN + TN) + (TP + FP) * (FP + TN)) != 0 else 0  # Heidke Skill Score
     bs = brier_score_loss(y_test, y_prob)
     bs_ref = brier_score_loss(y_test, np.full_like(y_test, y_test.mean()))
     bss = (bs_ref - bs) / bs_ref if bs_ref != 0 else 0
-    auc_value = roc_auc_score(y_test, y_prob) # Area Under the Curve
-
+    auc_value = roc_auc_score(y_test, y_prob) 
 
     return {
         "TN": TN, "FP": FP, "FN": FN, "TP": TP,
@@ -126,6 +128,9 @@ def cal_performance_metrics(cm, y_test, y_pred, y_prob):
         "BS" : bs, "BSS" : bss, "AUC" : auc_value
     }
 
+"""
+### Corss Validation
+"""
 
 # function for cross validations
 def perform_10fold(normalized_x, y, model):
@@ -133,11 +138,9 @@ def perform_10fold(normalized_x, y, model):
     fold_metrics = []
 
     for fold, (train_index, test_index) in enumerate(cross_validation.split(normalized_x), 1):
-        # Split the data
         X_train, X_test = normalized_x[train_index], normalized_x[test_index]
         y_train, y_test = y[train_index], y[test_index]
 
-        # Train and predict
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         y_prob = model.predict_proba(X_test)[:, 1]
@@ -147,7 +150,6 @@ def perform_10fold(normalized_x, y, model):
         metrics['Fold'] = fold
         fold_metrics.append(metrics)
 
-
     return fold_metrics
 
 """
@@ -155,19 +157,16 @@ def perform_10fold(normalized_x, y, model):
 """
 
 print("\nKNN Algoritham\n")
+
 knn = KNeighborsClassifier(n_neighbors=15)
-
 fold_metrics = perform_10fold(normalized_x, y, knn)
-
 df_fold_knn = pd.DataFrame(fold_metrics)
-
 avg_fold_knn = df_fold_knn.mean().to_frame(name="Avarage(Mean)")
 print(df_fold_knn.round(3).T)
 print(avg_fold_knn.round(3))
 
 """### Randome Forest
 """
-
 print("\nRandom Forest Alogoritham\n")
 
 rf = RandomForestClassifier(min_samples_split= 10,n_estimators= 100, random_state=42)
@@ -181,21 +180,17 @@ print(avg_fold_rf.round(3))
 """
 
 print("\nLSTM Algoritham\n")
-# Reshape the training and testing data to 3D shape for LSTM
 x_train_lstm = x_train.reshape((x_train.shape[0], 1, x_train.shape[1]))
 x_test_lstm = x_test.reshape((x_test.shape[0], 1, x_test.shape[1]))
 
-# Performing one-hot encoding
 y_train_lstm = to_categorical(y_train)
 y_test_lstm = to_categorical(y_test)
 
-# Function to build LSTM model
 def lstm_model(input_shape):
-    # Build the LSTM model
     model = Sequential()
     model.add(Input(shape=input_shape))
     model.add(LSTM(50, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))  # Binary classification
+    model.add(Dense(1, activation='sigmoid')) 
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
 
@@ -203,28 +198,20 @@ cross_validation = KFold(n_splits=10, shuffle=True, random_state=42)
 fold_metrics = []
 
 for fold, (train_index, test_index) in enumerate(cross_validation.split(x_train_lstm, y_train_lstm), 1):
-    # Split the data
     x_train, x_test = normalized_x[train_index], normalized_x[test_index]
     y_train, y_test = y[train_index], y[test_index]
 
-    # Reshape data
     x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
     x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], 1))
 
-    # Debugging step: print shapes
     print(f"Fold {fold}: x_train shape = {x_train.shape}")
 
-    # Create a new LSTM model with the input shape of the training data
     model = lstm_model(x_train.shape[1:])
-
-    # Train the LSTM model
     model.fit(x_train, y_train, epochs=10, batch_size=32, verbose=0)
 
-    # Make predictions
     y_prob = model.predict(x_test).reshape(-1)
     y_pred = (y_prob > 0.5).astype(int)
 
-    # Calculate the confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     metrics = cal_performance_metrics(cm,y_test, y_pred,y_prob)
 
@@ -240,20 +227,24 @@ print(avg_fold_lstm.round(3))
 """### Comparing all the Averages of Algorithms"""
 
 print('Comparing the average for all Algorithms')
+print("")
 averages_combined = pd.concat([avg_fold_knn, avg_fold_rf, avg_fold_lstm], axis=1)
 averages_combined.columns = ["kNN average", "Random Forest average", "LSTM average"]
 
-# Print the averages
 print(averages_combined)
+
+"""
+### generating ROC curve
+"""
 
 from sklearn.metrics import roc_curve, auc
 
 x_train_roc = x_train.reshape(x_train.shape[0], x_train.shape[1])  # squeeze last dim
 x_test_roc = x_test.reshape(x_test.shape[0], x_test.shape[1])
 
+
 """#### KNN
 """
-
 knn_roc = KNeighborsClassifier(n_neighbors=15)
 knn_roc.fit(x_train_roc, y_train)
 
@@ -275,9 +266,9 @@ plt.title('ROC Curve for KNN')
 plt.legend(loc='lower right')
 plt.show()
 
+
 """#### Randome Forest
 """
-
 rf = RandomForestClassifier(n_estimators=100, min_samples_split=10, random_state=42)
 rf.fit(x_train_roc, y_train)
 
@@ -298,6 +289,7 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Curve for Random Forest')
 plt.legend(loc='lower right')
 plt.show()
+
 
 """#### LSTM
 """
