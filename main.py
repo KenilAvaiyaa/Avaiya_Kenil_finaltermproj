@@ -226,7 +226,7 @@ print(avg_fold_lstm.round(3))
 
 """### Comparing all the Averages of Algorithms"""
 
-print('Comparing the average for all Algorithms')
+print('\nComparing the average for all Algorithms')
 print("")
 averages_combined = pd.concat([avg_fold_knn, avg_fold_rf, avg_fold_lstm], axis=1)
 averages_combined.columns = ["kNN average", "Random Forest average", "LSTM average"]
@@ -236,7 +236,6 @@ print(averages_combined)
 """
 ### generating ROC curve
 """
-
 from sklearn.metrics import roc_curve, auc
 
 x_train_roc = x_train.reshape(x_train.shape[0], x_train.shape[1])  # squeeze last dim
