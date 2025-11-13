@@ -1,149 +1,113 @@
-```markdown
-# Superhero Binary Classification Project
+# Comparative Analysis Using Supervised and Deep Learning Algorithms for Binary Classification on a Superhero Dataset
+## CS634: Data mining
 
-## CS634: Data Mining
-
-### Project Overview
-This project implements and compares three machine learning models to classify superheroes as "good" or "not good" based on their attributes. The models used are k-Nearest Neighbors (kNN), Random Forest, and Long Short-Term Memory (LSTM) neural networks.
-
-The goal is to identify which algorithm best handles complex superhero data, evaluating performance with metrics like accuracy, precision, recall, specificity, F1-score, ROC-AUC, and Brier score.
+## Project Overview
+This project performs a **comparative analysis** of three machine learning models — **k-Nearest Neighbors (kNN)**, **Random Forest**, and **Long Short-Term Memory (LSTM)** — to determine which performs best for a **binary classification task** on a custom superhero dataset.  
+The goal is to predict whether a superhero is **“good” or “evil”** based on physical attributes, training habits, and special powers.
 
 ---
 
-## Project Structure
-
-```
-project-root/
-├── superhero-dataset.csv        # Dataset with superhero features and labels
-├── main.py                      # Main Python script running training and evaluation
-├── main.ipynb                   # Jupyter notebook with interactive analysis
-├── requirment.txt               # List of required Python packages
-├── Final_Project_Report.docx    # Detailed final project report
-├── README.md                    # Project documentation (this file)
-```
-
----
-
-## Installation
-
-### Prerequisites
-
-- Python 3.x installed on your system
-
-### Setup Virtual Environment (Recommended)
-
-Windows:
-```
-python -m venv venv
-venv\Scripts\activate
-```
-
-Mac/Linux:
-```
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Install Python Packages
-```
-pip install -r requirment.txt
-```
-
-The requirements file includes:
-- pandas
-- numpy
-- matplotlib
-- seaborn
-- scikit-learn
-- tensorflow
-
----
-
-## Usage
-
-### Running the Python Script
-
-1. Ensure `superhero-dataset.csv` is in the project directory.
-2. Run the main script:
-
-Windows:
-```
-python main.py
-```
-
-Mac/Linux:
-```
-python3 main.py
-```
-
-The script will perform:
-- Data loading and preprocessing
-- Model training and evaluation with kNN, Random Forest, and LSTM
-- 10-fold cross-validation
-- Output of evaluation metrics and plots
-
-### Running via Jupyter Notebook
-
-Launch and run all cells in `main.ipynb` for interactive exploration, visualizations, and detailed explanations.
-
-```
-jupyter notebook main.ipynb
-```
+## Algorithms Used
+1. **k-Nearest Neighbors (kNN)** – Classifies based on the majority vote among the k nearest data points.  
+2. **Random Forest** – An ensemble method combining multiple decision trees for better accuracy and generalization.  
+3. **Long Short-Term Memory (LSTM)** – A deep learning model adapted for tabular classification; requires tuning to avoid overfitting.
 
 ---
 
 ## Dataset Description
+**Dataset:** `superhero dataset.csv`
 
-The dataset `superhero-dataset.csv` contains records of superheroes with attributes such as:
+Each row represents a superhero with these features:
 
-- Physical features: height, weight, age
-- Training statistics and years active
-- Civilian casualty counts
-- Power level and public approval ratings
-- Superpowers (binary): superstrength, flight, energy projection, telepathy, healing factor, shapeshifting, invisibility, telekinesis
-- Target label: `isgood` (1 for good, 0 for evil)
+| Feature | Description |
+|----------|-------------|
+| `height_cm` | Height in centimeters |
+| `weight_kg` | Weight in kilograms |
+| `age` | Age of the superhero |
+| `years_active` | Total years active |
+| `training_hours_per_week` | Average training hours per week |
+| `civilian_casualties_past_year` | Civilian casualties in the past year |
+| `power_level` | Overall power rating |
+| `public_approval_rating` | Public approval rating (0–100%) |
+| `super_strength`, `flight`, `telepathy`, `healing_factor`, `shape_shifting`, `invisibility`, `telekinesis` | Binary power indicators (1 = Yes, 0 = No) |
+| `is_good` | Target variable (1 = good, 0 = evil) |
 
 ---
 
-## Features
+## Environment Setup
 
-- Exploratory Data Analysis including feature distributions and correlations
-- Data preprocessing: missing value and duplicate handling, scaling using StandardScaler
-- Model implementations: k-Nearest Neighbors, Random Forest, and LSTM neural networks
-- Cross-validation: 10-fold to ensure robust evaluation
-- Comprehensive evaluation metrics: Accuracy, Precision, Recall, Specificity, F1 Score, AUC, Brier Score
-- Visualization of results and performance comparisons
+### Clone the Repository
+```bash
+git clone https://github.com/KenilAvaiyaa/Avaiya_Kenil_finaltermproj.git
+cd Avaiya_Kenil_finaltermproj
+```
+
+### Create a Virtual Environment
+**Windows:**
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+**macOS/Linux:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### Install Dependencies
+Install all required libraries:
+```bash
+pip install -r requirements.txt
+```
+Or manually:
+```bash
+pip install pandas numpy scikit-learn matplotlib seaborn tensorflow
+```
+
+---
+
+## How to Run
+### Option 1 – Run Jupyter Notebook
+Open `main.ipynb` and run all cells.
+
+### Option 2 – Run Python Script
+```bash
+python main.py   # or python3 main.py on macOS/Linux
+```
+Make sure `superhero dataset.csv` is in the same folder.
+
+---
+
+## Project Workflow
+1. Load dataset using pandas  
+2. Handle missing/duplicate values  
+3. Perform EDA with Seaborn and Matplotlib  
+4. Standardize features using `StandardScaler`  
+5. Split data into 80% training and 20% testing  
+6. Train models: kNN, Random Forest, LSTM  
+7. Perform 10-fold cross-validation  
+8. Evaluate with metrics: Accuracy, Precision, Recall, F1, Specificity, AUC, Brier Score, TSS, HSS, BSS, etc.  
 
 ---
 
 ## Results Summary
 
-- Random Forest shows consistent accuracy and balanced metrics
-- kNN provides reasonable baseline classification performance
-- LSTM excels in recalling positive cases but tends to overfit tabular data
-- Full metrics, confusion matrices, and plots are available in outputs and final report
+| Model | Accuracy | Precision | Recall | Specificity | AUC |
+|--------|-----------|-----------|---------|--------------|------|
+| **Random Forest** | ~65% | **0.67** | **0.92** | Best Balance | **Highest** |
+| **kNN** | Moderate | Balanced | Fair | Moderate | Average |
+| **LSTM** | High Recall | Low Specificity | 1.0 | 0.0 | Unstable |
+
+**Best Performing Model:** Random Forest  
+It achieved the most balanced and reliable performance across all metrics.
 
 ---
 
-## Notes
-
-- All dependencies are listed in `requirment.txt`
-- The notebook contains detailed code and explanations for each step
-- Ensure to run virtual environment activation prior to installing dependencies and running scripts
-
----
-
-## License
-
-Specify your project license here (e.g., MIT, Apache 2.0).
-
----
-
-## Acknowledgments
-
-Thanks to course instructors and dataset providers for resources and support.
-
----
-
-Feel free to edit and expand this README.md as needed for your GitHub repository.
-```
+## Tools & Libraries
+- Python 3.x  
+- Pandas  
+- NumPy  
+- Scikit-learn  
+- TensorFlow / Keras  
+- Matplotlib  
+- Seaborn  
